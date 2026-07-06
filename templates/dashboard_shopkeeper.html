@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h2>Shopkeeper Dashboard</h2>
+    <p>Welcome, {{ session.get('user_name') }}</p>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+    <!-- Available Products -->
+    <div class="glass-container">
+        <h3>Available Products from Manufacturers</h3>
+        <div class="product-grid" style="margin-top: 1.5rem; grid-template-columns: 1fr;">
+            {% for product in all_products %}
+            <div class="product-card" style="background: rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--glass-border); display: flex; gap: 1.5rem; align-items: center;">
+                {% if product.image_filename %}
+                <img src="{{ url_for('static', filename='uploads/' ~ product.image_filename) }}" alt="{{ product.name }}" style="width: 120px; height: 120px; object-fit: cover; border-radius: 4px;">
+                {% endif %}
+                <div style="flex: 1;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <h4>{{ product.name }}</h4>
+                        <span style="color: var(--primary-color);">${{ product.price }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">By {{ product.manufacturer_name }}</p>
+                        <a href="{{ url_for('contact', recipient_id=product.manufacturer_id, context='Wholesale order request for ' ~ product.name) }}" 
+                           class="btn-outline" style="padding: 0.2rem 0.6rem; font-size: 0.75rem;">Contact Manufacturer</a>
+                    </div>
+                    <p style="margin: 0.5rem 0;">{{ product.description }}</p>
+                    
+                    <form method="POST" action="{{ url_for('add_to_inventory') }}" style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                        <input type="hidden" name="product_id" value="{{ product.id }}">
+                        <input type="number" name="quantity" min="1" value="10" class="form-control" style="width: 80px;" required>
+                        <button type="submit" class="btn-primary" style="flex: 1; font-size: 0.9rem;">Add to Stock</button>
+                    </form>
+                </div>
+            </div>
+            {% else %}
+            <p>No products available to stock.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- My Inventory -->
+    <div class="glass-container">
+        <h3>Your Current Inventory</h3>
+        <div class="product-grid" style="margin-top: 1.5rem; grid-template-columns: 1fr;">
+            {% for item in inventory %}
+            <div class="product-card" style="background: rgba(88, 166, 255, 0.05); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--primary-color);">
+                <div style="display: flex; justify-content: space-between;">
+                    <h4>{{ item.product_name }}</h4>
+                    <span style="font-weight: bold;">Stock: {{ item.quantity }}</span>
+                </div>
+                <p style="color: var(--text-muted); font-size: 0.85rem;">Manufacturer: {{ item.manufacturer_name }}</p>
+                
+                <form method="POST" action="{{ url_for('update_inventory') }}" style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                    <input type="hidden" name="inventory_id" value="{{ item.id }}">
+                    <input type="number" name="quantity" min="0" value="{{ item.quantity }}" class="form-control" style="width: 80px;" required>
+                    <button type="submit" class="btn-outline" style="flex: 1; font-size: 0.9rem;">Update Stock</button>
+                </form>
+                
+                <form method="POST" action="{{ url_for('remove_inventory') }}" style="margin-top: 0.5rem;">
+                    <input type="hidden" name="inventory_id" value="{{ item.id }}">
+                    <button type="submit" class="btn-outline" style="width: 100%; font-size: 0.9rem; color: #ff5858; border-color: #ff5858;">Remove from Inventory</button>
+                </form>
+            </div>
+            {% else %}
+            <p>Your inventory is empty.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

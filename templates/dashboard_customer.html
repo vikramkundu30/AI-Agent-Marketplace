@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h2>Customer Dashboard</h2>
+    <p>Welcome, {{ session.get('user_name') }}</p>
+</div>
+
+<!-- Search Bar -->
+<div class="glass-container" style="margin-bottom: 2rem;">
+    <form method="GET" action="{{ url_for('dashboard_customer') }}" style="display: flex; gap: 1rem;">
+        <input type="text" name="q" class="form-control" placeholder="Search for products using AI..." value="{{ query }}">
+        <button type="submit" class="btn-primary">Search</button>
+    </form>
+</div>
+
+<!-- Results -->
+<div class="glass-container">
+    <h3>{% if query %}Search Results{% else %}Available Products{% endif %}</h3>
+    <div class="product-grid" style="margin-top: 1.5rem;">
+        {% for product in products %}
+        <div class="product-card" style="background: rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--glass-border);">
+            {% if product.image_filename %}
+            <img src="{{ url_for('static', filename='uploads/' ~ product.image_filename) }}" alt="{{ product.name }}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 4px; margin-bottom: 1rem;">
+            {% endif %}
+            <div style="display: flex; justify-content: space-between; align-items: start;">
+                <h4>{{ product.name }}</h4>
+                <span style="color: var(--primary-color); font-weight: bold;">${{ product.price }}</span>
+            </div>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.5rem;">
+                By {{ product.manufacturer_name }} 
+                <a href="{{ url_for('contact', recipient_id=product.manufacturer_id, context='Purchase request for ' ~ product.name) }}" 
+                   style="color: var(--primary-color); text-decoration: none; margin-left: 10px; font-size: 0.8rem;">
+                   <button class="btn-outline" style="padding: 0.2rem 0.6rem; font-size: 0.75rem;">Buy Directly</button>
+                </a>
+            </p>
+            <p>{{ product.description }}</p>
+            {% if product.relevance %}
+            <p style="margin-top: 0.5rem; font-size: 0.8rem; color: #bc8cff;">AI Relevance Score: {{ "%.2f"|format(product.relevance) }}</p>
+            {% endif %}
+            
+            <!-- Show shopkeepers who have this -->
+            <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                <strong style="font-size: 0.85rem;">Available at:</strong>
+                <ul style="list-style-type: none; padding: 0; margin-top: 0.5rem;">
+                    {% for inventory in product.shopkeepers %}
+                    <li style="font-size: 0.8rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <span>{{ inventory.shopkeeper_name }} ({{ inventory.location }}) - <span style="color: var(--text-muted);">Stock: {{ inventory.quantity }}</span></span>
+                        <a href="{{ url_for('contact', recipient_id=inventory.shopkeeper_id, context='Inquiry about ' ~ product.name) }}" class="btn-outline" style="padding: 0.2rem 0.5rem; font-size: 0.7rem; border-color: var(--text-muted); color: var(--text-main);">Contact</a>
+                    </li>
+                    {% else %}
+                    <li style="font-size: 0.8rem; color: var(--text-muted);">No shopkeepers currently stock this.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% else %}
+        <p>No products found.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

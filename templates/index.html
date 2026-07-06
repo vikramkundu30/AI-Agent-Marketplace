@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero glass-container">
+    <h1>Connect. Source. Succeed.</h1>
+    <p>The smartest platform connecting manufacturers, shopkeepers, and customers through AI-powered search and intelligent outreach.</p>
+    
+    <div style="margin-top: 2rem;">
+        <a href="{{ url_for('register') }}" class="btn-primary" style="margin-right: 1rem;">Join the Network</a>
+        <a href="{{ url_for('login') }}" class="btn-outline">Sign In</a>
+    </div>
+</div>
+{% endblock %}
